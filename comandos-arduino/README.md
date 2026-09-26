@@ -28,23 +28,63 @@ El lector RFID se comunica con el ESP32 a través del protocolo **SPI**. Es crí
 
 *(Opcional)* Conexión de luz LED indicadora: Conectar la pata larga (positivo) al pin **D4** del ESP32, y la pata corta (negativo) a cualquier pin **GND**.
 
-## 💻 Requisitos de Software
+## 📜 Código fuente (Sketch de Arduino)
 
-Para ejecutar este proyecto, necesitas configurar el entorno de Arduino:
-1. **Arduino IDE**: Descargado e instalado en tu PC.
-2. **Placas ESP32**: Haber instalado la URL de Espressif en el gestor de tarjetas.
-3. **Librerías**: Tener instalada la librería **MFRC522** (por GithubCommunity) desde el Gestor de Bibliotecas.
+Copia este código y pégalo en tu Arduino IDE. Asegúrate de modificar la línea donde dice `"AQUI_VA_TU_CLAVE"` con el UID real de tu tarjeta.
 
-## 🚀 Instalación y Configuración
+```cpp
+#include <SPI.h>
+#include <MFRC522.h>
 
-### Paso 1: Descubrir el UID de tu tarjeta
-1. Conecta tu ESP32 al computador vía USB.
-2. Abre el código en Arduino IDE. Ve a `Herramientas`, selecciona la placa **DOIT ESP32 DEVKIT V1** y el puerto **COM** correspondiente.
-3. Sube el código. *(Nota: Si la consola se queda en "Connecting...", mantén presionado el botón físico **BOOT** de la placa hasta que empiece a cargar).*
-4. Abre el **Monitor Serie** y configúralo a **115200 baudios**.
-5. Acerca tu tarjeta al lector azul. La consola imprimirá un código similar a: `UID de tu tarjeta es: 7A B8 C9 2D`. Copia este código.
+#define SS_PIN 5
+#define RST_PIN 22
+#define LED_PIN 2  // Cambia a 4 si usas un LED externo en el pin D4
 
-### Paso 2: Registrar la Llave Maestra
-1. En el código de Arduino, busca la línea de validación (aproximadamente en la línea 42):
-   ```cpp
-   if (content.substring(1) == "AQUI_VA_TU_CLAVE") 
+MFRC522 mfrc522(SS_PIN, RST_PIN);
+
+void setup() {
+  Serial.begin(115200);
+  SPI.begin();
+  mfrc522.PCD_Init();
+  
+  // Configurar el LED como salida y empezar apagado
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW); 
+  
+  Serial.println("Sistema iniciado. Acerca tu tarjeta blanca al lector azul...");
+}
+
+void loop() {
+  // Revisar si hay nuevas tarjetas presentes
+  if ( ! mfrc522.PICC_IsNewCardPresent()) {
+    return;
+  }
+  // Leer la tarjeta
+  if ( ! mfrc522.PICC_ReadCardSerial()) {
+    return;
+  }
+
+  Serial.print("UID de tu tarjeta es: ");
+  String content= "";
+  for (byte i = 0; i < mfrc522.uid.size; i++) {
+     Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+     Serial.print(mfrc522.uid.uidByte[i], HEX);
+     content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
+     content.concat(String(mfrc522.uid.uidByte[i], HEX));
+  }
+  Serial.println();
+  content.toUpperCase();
+
+  // Aquí validamos la llave maestra
+  if (content.substring(1) == "AQUI_VA_TU_CLAVE") {
+    Serial.println("¡ACCESO CONCEDIDO! Abriendo la puerta...");
+    
+    digitalWrite(LED_PIN, HIGH); // Enciende la luz
+    delay(3000);                 // Espera 3 segundos
+    digitalWrite(LED_PIN, LOW);  // Apaga la luz
+    
+  } else {
+    Serial.println("ACCESO DENEGADO. Tarjeta no reconocida.");
+    delay(1000);
+  }
+}
