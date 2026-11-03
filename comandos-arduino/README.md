@@ -18,13 +18,13 @@ El lector RFID se comunica con el ESP32 a través del protocolo **SPI**. Es crí
 | Pin RFID-RC522 | Pin ESP32 | Descripción |
 | :--- | :--- | :--- |
 | **3.3V** | **3V3** | Alimentación (¡ADVERTENCIA: NUNCA conectar a 5V o VIN!) |
-| **RST** | **D22** | Reset |
+| **RST** | **G22** | Reset |
 | **GND** | **GND** | Tierra / Negativo |
 | **IRQ** | *No conectado* | Interrupción (No se usa en este proyecto) |
-| **MISO** | **D19** | Master In Slave Out |
-| **MOSI** | **D23** | Master Out Slave In |
-| **SCK** | **D18** | Serial Clock |
-| **SDA (SS)**| **D5** | Slave Select / Data |
+| **MISO** | **G19** | Master In Slave Out |
+| **MOSI** | **G23** | Master Out Slave In |
+| **SCK** | **G18** | Serial Clock |
+| **SDA (SS)**| **G5** | Slave Select / Data |
 
 *(Opcional)* Conexión de luz LED indicadora: Conectar la pata larga (positivo) al pin **D4** del ESP32, y la pata corta (negativo) a cualquier pin **GND**.
 
